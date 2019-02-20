@@ -45,7 +45,9 @@ and will appear smooth and natural.
 :Organization:
   Laboratory for Fluorescence Dynamics. University of California, Irvine
 
-:Version: 2019.1.1
+:License: 3-clause BSD
+
+:Version: 2019.2.20
 
 Requirements
 ------------
@@ -88,7 +90,7 @@ Examples
 
 from __future__ import division, print_function
 
-__version__ = '2019.1.1'
+__version__ = '2019.2.20'
 __docformat__ = 'restructuredtext en'
 __all__ = 'interpolate',
 
@@ -190,7 +192,7 @@ def interpolate(x, y, x_new, axis=-1, out=None):
 try:
     interpolate_py = interpolate
     from ._akima import interpolate
-except ImportError:
+except (ImportError, ValueError):
     try:
         from _akima import interpolate
     except ImportError:
