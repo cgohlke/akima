@@ -34,8 +34,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /* Interpolation of data points in a plane based on Akima's method.
 
-Akima.c is a Python C extension module to provide faster
-implementations for the akima package.
+Akima.c is a Python C extension module that provides a fast implementation
+for the akima package.
 
 Refer to the akima.py module for documentation and tests.
 
@@ -45,11 +45,13 @@ Refer to the akima.py module for documentation and tests.
 :Organization:
   Laboratory for Fluorescence Dynamics. University of California, Irvine
 
-:Version: 2019.1.1
+:License: 3-clause BSD
+
+:Version: 2019.2.20
 
 */
 
-#define _VERSION_ "2019.1.1"
+#define _VERSION_ "2019.2.20"
 
 #define WIN32_LEAN_AND_MEAN
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
