@@ -12,7 +12,9 @@ and will appear smooth and natural.
 :Organization:
   Laboratory for Fluorescence Dynamics. University of California, Irvine
 
-:Version: 2019.1.1
+:License: 3-clause BSD
+
+:Version: 2019.2.20
 
 Requirements
 ------------
