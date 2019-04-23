@@ -8,8 +8,8 @@ import re
 import warnings
 
 from setuptools import setup, Extension
+from setuptools.command.build_ext import build_ext as _build_ext
 
-import numpy
 
 with open('akima/akima.py') as fh:
     code = fh.read()
@@ -34,14 +34,18 @@ if 'sdist' in sys.argv:
         fh.write(license)
     with open('README.rst', 'w') as fh:
         fh.write(readme)
-    numpy_required = '1.11.3'
-else:
-    numpy_required = numpy.__version__
 
-ext_modules = [
-    Extension('akima._akima',
-              ['akima/akima.c'],
-              include_dirs=[numpy.get_include()],)]
+
+class build_ext(_build_ext):
+    """Delay import numpy until build."""
+    def finalize_options(self):
+        _build_ext.finalize_options(self)
+        __builtins__.__NUMPY_SETUP__ = False
+        import numpy
+        self.include_dirs.append(numpy.get_include())
+
+
+ext_modules = [Extension('akima._akima', ['akima/akima.c'])]
 
 setup_args = dict(
     name='akima',
@@ -52,7 +56,9 @@ setup_args = dict(
     author_email='cgohlke@uci.edu',
     url='https://www.lfd.uci.edu/~gohlke/',
     python_requires='>=2.7',
-    install_requires=['numpy>=%s' % numpy_required],
+    install_requires=['numpy>=1.11.3'],
+    setup_requires=['setuptools>=18.0', 'numpy>=1.11.3'],
+    cmdclass={'build_ext': build_ext},
     packages=['akima'],
     license='BSD',
     zip_safe=False,
