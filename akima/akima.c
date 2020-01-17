@@ -1,24 +1,22 @@
 /* akima.c
 
 /*
-Copyright (c) 2007-2019, Christoph Gohlke
-Copyright (c) 2007-2019, The Regents of the University of California
-Produced at the Laboratory for Fluorescence Dynamics
+Copyright (c) 2007-2020, Christoph Gohlke
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
 
-* Redistributions of source code must retain the above copyright notice, this
-  list of conditions and the following disclaimer.
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
 
-* Redistributions in binary form must reproduce the above copyright notice,
-  this list of conditions and the following disclaimer in the documentation
-  and/or other materials provided with the distribution.
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
 
-* Neither the name of the copyright holder nor the names of its
-  contributors may be used to endorse or promote products derived from
-  this software without specific prior written permission.
+3. Neither the name of the copyright holder nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -45,13 +43,13 @@ Refer to the akima.py module for documentation and tests.
 :Organization:
   Laboratory for Fluorescence Dynamics. University of California, Irvine
 
-:License: 3-clause BSD
+:License: BSD 3-Clause
 
-:Version: 2019.4.22
+:Version: 2020.1.1
 
 */
 
-#define _VERSION_ "2019.4.22"
+#define _VERSION_ "2020.1.1"
 
 #define WIN32_LEAN_AND_MEAN
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
@@ -72,7 +70,7 @@ int interpolate(
     Py_ssize_t so,            /* size of output arrays */
     char *xo, Py_ssize_t dxo, /* x coordinates of output and stride */
     char *yo, Py_ssize_t dyo, /* y output coordinates and stride */
-    double *p           /* buffer for polynomial coefficients of size 4*si+4 */
+    double *p  /* buffer for polynomial coefficients of size 4*si+4 */
     )
 {
     Py_ssize_t i, s;
@@ -426,8 +424,6 @@ static PyMethodDef module_methods[] = {
 };
 
 
-#if PY_MAJOR_VERSION >= 3
-
 struct module_state {
     PyObject *error;
 };
@@ -445,30 +441,19 @@ static int module_clear(PyObject *m) {
 }
 
 static struct PyModuleDef moduledef = {
-        PyModuleDef_HEAD_INIT,
-        "_akima",
-        NULL,
-        sizeof(struct module_state),
-        module_methods,
-        NULL,
-        module_traverse,
-        module_clear,
-        NULL
+    PyModuleDef_HEAD_INIT,
+    "_akima",
+    NULL,
+    sizeof(struct module_state),
+    module_methods,
+    NULL,
+    module_traverse,
+    module_clear,
+    NULL
 };
-
-#define INITERROR return NULL
 
 PyMODINIT_FUNC
 PyInit__akima(void)
-
-#else
-
-#define INITERROR return
-
-PyMODINIT_FUNC
-init_akima(void)
-
-#endif
 {
     PyObject *module;
 
@@ -476,35 +461,25 @@ init_akima(void)
     PyOS_snprintf(doc, sizeof(module_doc) + sizeof(_VERSION_),
                   module_doc, _VERSION_);
 
-#if PY_MAJOR_VERSION >= 3
     moduledef.m_doc = doc;
     module = PyModule_Create(&moduledef);
-#else
-    module = Py_InitModule3("_akima", module_methods, doc);
-#endif
 
     PyMem_Free(doc);
 
     if (module == NULL)
-        INITERROR;
+        return NULL;
 
     if (_import_array() < 0) {
         Py_DECREF(module);
-        INITERROR;
+        return NULL;
     }
 
     {
-#if PY_MAJOR_VERSION < 3
-    PyObject *s = PyString_FromString(_VERSION_);
-#else
     PyObject *s = PyUnicode_FromString(_VERSION_);
-#endif
     PyObject *dict = PyModule_GetDict(module);
     PyDict_SetItemString(dict, "__version__", s);
     Py_DECREF(s);
     }
 
-#if PY_MAJOR_VERSION >= 3
     return module;
-#endif
 }
