@@ -1,24 +1,21 @@
-# -*- coding: utf-8 -*-
 # akima.py
 
-# Copyright (c) 2007-2019, Christoph Gohlke
-# Copyright (c) 2007-2019, The Regents of the University of California
-# Produced at the Laboratory for Fluorescence Dynamics
+# Copyright (c) 2007-2020, Christoph Gohlke
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
 #
-# * Redistributions of source code must retain the above copyright notice,
-#   this list of conditions and the following disclaimer.
+# 1. Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
 #
-# * Redistributions in binary form must reproduce the above copyright notice,
-#   this list of conditions and the following disclaimer in the documentation
-#   and/or other materials provided with the distribution.
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
 #
-# * Neither the name of the copyright holder nor the names of its
-#   contributors may be used to endorse or promote products derived from
-#   this software without specific prior written permission.
+# 3. Neither the name of the copyright holder nor the names of its
+#    contributors may be used to endorse or promote products derived from
+#    this software without specific prior written permission.
 #
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -35,9 +32,14 @@
 """Akima Interpolation.
 
 Akima is a Python library that implements Akima's interpolation method
-using a continuously differentiable sub-spline built from piecewise cubic
-polynomials [1]. The resultant curve passes through the given data points
-and will appear smooth and natural.
+described in:
+
+    A new method of interpolation and smooth curve fitting based
+    on local procedures. Hiroshi Akima, J. ACM, October 1970, 17(4), 589-602.
+
+A continuously differentiable sub-spline is built from piecewise cubic
+polynomials. It passes through the given data points and will appear smooth
+and natural.
 
 :Author:
   `Christoph Gohlke <https://www.lfd.uci.edu/~gohlke/>`_
@@ -45,15 +47,14 @@ and will appear smooth and natural.
 :Organization:
   Laboratory for Fluorescence Dynamics. University of California, Irvine
 
-:License: 3-clause BSD
+:License: BSD 3-Clause
 
-:Version: 2019.4.22
+:Version: 2020.1.1
 
 Requirements
 ------------
-* `CPython 2.7 or 3.5+ <https://www.python.org>`_
-* `Numpy 1.11.3 <https://www.numpy.org>`_
-* `Matplotlib 2.2 <https://www.matplotlib.org>`_  (optional for plotting)
+* `CPython >= 3.6 <https://www.python.org>`_
+* `Numpy 1.14 <https://www.numpy.org>`_
 
 Notes
 -----
@@ -62,13 +63,9 @@ The Akima module is no longer being actively developed.
 Consider using `scipy.interpolate.Akima1DInterpolator
 <http://docs.scipy.org/doc/scipy/reference/interpolate.html>`_ instead.
 
-References
-----------
-(1) A new method of interpolation and smooth curve fitting based
-    on local procedures. Hiroshi Akima, J. ACM, October 1970, 17(4), 589-602.
-
 Examples
 --------
+>>> from matplotlib import pyplot
 >>> from scipy.interpolate import Akima1DInterpolator
 >>> def example():
 ...     '''Plot interpolated Gaussian noise.'''
@@ -77,7 +74,6 @@ Examples
 ...     x2 = numpy.arange(x[0], x[-1], 0.05)
 ...     y2 = interpolate(x, y, x2)
 ...     y3 = Akima1DInterpolator(x, y)(x2)
-...     from matplotlib import pyplot
 ...     pyplot.title('Akima interpolation of Gaussian noise')
 ...     pyplot.plot(x2, y2, 'r-', label='akima')
 ...     pyplot.plot(x2, y3, 'b:', label='scipy', linewidth=2.5)
@@ -88,11 +84,9 @@ Examples
 
 """
 
-from __future__ import division, print_function
+__version__ = '2020.1.1'
 
-__version__ = '2019.4.22'
-__docformat__ = 'restructuredtext en'
-__all__ = 'interpolate',
+__all__ = ('interpolate',)
 
 import numpy
 
@@ -192,15 +186,18 @@ def interpolate(x, y, x_new, axis=-1, out=None):
 try:
     interpolate_py = interpolate
     from ._akima import interpolate
-except (ImportError, ValueError):
+except ImportError:
     try:
         from _akima import interpolate
     except ImportError:
         import warnings
+
         warnings.warn('failed to import the _akima C extension module')
         del interpolate_py
+
 
 if __name__ == '__main__':
     import doctest
     import random  # noqa: used in doctests
+
     doctest.testmod()
