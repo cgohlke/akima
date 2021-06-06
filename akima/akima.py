@@ -1,6 +1,6 @@
 # akima.py
 
-# Copyright (c) 2007-2020, Christoph Gohlke
+# Copyright (c) 2007-2021, Christoph Gohlke
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -49,12 +49,12 @@ and natural.
 
 :License: BSD 3-Clause
 
-:Version: 2020.1.1
+:Version: 2021.6.6
 
 Requirements
 ------------
-* `CPython >= 3.6 <https://www.python.org>`_
-* `Numpy 1.14 <https://www.numpy.org>`_
+* `CPython >= 3.7 <https://www.python.org>`_
+* `Numpy 1.15 <https://www.numpy.org>`_
 
 Notes
 -----
@@ -84,7 +84,7 @@ Examples
 
 """
 
-__version__ = '2020.1.1'
+__version__ = '2021.6.6'
 
 __all__ = ('interpolate',)
 
@@ -164,20 +164,20 @@ def interpolate(x, y, x_new, axis=-1, out=None):
     m1 = numpy.concatenate(([mmm], [mm], m, [mp], [mpp]))
 
     dm = numpy.abs(numpy.diff(m1))
-    f1 = dm[2:n + 2]
+    f1 = dm[2 : n + 2]
     f2 = dm[0:n]
     f12 = f1 + f2
 
     ids = numpy.nonzero(f12 > 1e-9 * numpy.max(f12))[0]
-    b = m1[1:n + 1]
+    b = m1[1 : n + 1]
 
     b[ids] = (f1[ids] * m1[ids + 1] + f2[ids] * m1[ids + 2]) / f12[ids]
-    c = (3.0 * m - 2.0 * b[0:n - 1] - b[1:n]) / dx
-    d = (b[0:n - 1] + b[1:n] - 2.0 * m) / dx ** 2
+    c = (3.0 * m - 2.0 * b[0 : n - 1] - b[1:n]) / dx
+    d = (b[0 : n - 1] + b[1:n] - 2.0 * m) / dx ** 2
 
     bins = numpy.digitize(xi, x)
     bins = numpy.minimum(bins, n - 1) - 1
-    bb = bins[0:len(xi)]
+    bb = bins[0 : len(xi)]
     wj = xi - x[bb]
 
     return ((wj * d[bb] + c[bb]) * wj + b[bb]) * wj + y[bb]
