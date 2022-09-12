@@ -1,7 +1,7 @@
 /* akima.c
 
 /*
-Copyright (c) 2007-2021, Christoph Gohlke
+Copyright (c) 2007-2022, Christoph Gohlke
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -30,26 +30,20 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-/* Interpolation of data points in a plane based on Akima's method.
+#define _DOC_ \
+"Interpolate data points in a plane based on Akima's method.\n\
+\n\
+Akima.c is a Python C extension module that provides a fast implementation\n\
+for the akima package.\n\
+\n\
+Refer to the akima.py module for documentation and tests.\n\
+\n\
+:Author: `Christoph Gohlke <https://www.cgohlke.com/>`_\n\
+:License: BSD 3-Clause\n\
+:Version: 2022.9.12\n\
+"
 
-Akima.c is a Python C extension module that provides a fast implementation
-for the akima package.
-
-Refer to the akima.py module for documentation and tests.
-
-:Author:
-  `Christoph Gohlke <https://www.lfd.uci.edu/~gohlke/>`_
-
-:Organization:
-  Laboratory for Fluorescence Dynamics. University of California, Irvine
-
-:License: BSD 3-Clause
-
-:Version: 2021.6.6
-
-*/
-
-#define _VERSION_ "2021.6.6"
+#define _VERSION_ "2022.9.12"
 
 #define WIN32_LEAN_AND_MEAN
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
@@ -219,7 +213,8 @@ PyConverter_AnyDoubleArray(
     PyObject **address)
 {
     PyArrayObject *obj = (PyArrayObject *)object;
-    if (PyArray_Check(object) && (PyArray_TYPE(object) == NPY_DOUBLE)) {
+    if (PyArray_Check(object)
+        && (PyArray_TYPE((const PyArrayObject *)object) == NPY_DOUBLE)) {
         *address = object;
         Py_INCREF(object);
         return NPY_SUCCEED;
@@ -243,7 +238,8 @@ PyOutputConverter_AnyDoubleArrayOrNone(
         *address = NULL;
         return NPY_SUCCEED;
     }
-    if (PyArray_Check(object) && (PyArray_TYPE(object) == NPY_DOUBLE)) {
+    if (PyArray_Check(object)
+        && (PyArray_TYPE((const PyArrayObject *)object) == NPY_DOUBLE)) {
         Py_INCREF(object);
         *address = (PyArrayObject *)object;
         return NPY_SUCCEED;
@@ -410,13 +406,6 @@ py_interpolate(
 /*****************************************************************************/
 /* Python module */
 
-char module_doc[] =
-    "Interpolation of data points in a plane based on Akima's method.\n\n"
-    "Refer to the akima.py module for documentation and tests.\n\n"
-    "Authors:\n  Christoph Gohlke <https://www.lfd.uci.edu/~gohlke/>\n"
-    "  Laboratory for Fluorescence Dynamics, University of California, Irvine."
-    "\n\nVersion: %s\n";
-
 static PyMethodDef module_methods[] = {
     {"interpolate", (PyCFunction)py_interpolate, METH_VARARGS|METH_KEYWORDS,
         py_interpolate_doc},
@@ -457,17 +446,17 @@ PyInit__akima(void)
 {
     PyObject *module;
 
-    char *doc = (char *)PyMem_Malloc(sizeof(module_doc) + sizeof(_VERSION_));
-    PyOS_snprintf(doc, sizeof(module_doc) + sizeof(_VERSION_),
-                  module_doc, _VERSION_);
+    char *doc = (char *)PyMem_Malloc(sizeof(_DOC_) + sizeof(_VERSION_));
+    PyOS_snprintf(doc, sizeof(_DOC_) + sizeof(_VERSION_), _DOC_, _VERSION_);
 
     moduledef.m_doc = doc;
     module = PyModule_Create(&moduledef);
 
     PyMem_Free(doc);
 
-    if (module == NULL)
+    if (module == NULL) {
         return NULL;
+    }
 
     if (_import_array() < 0) {
         Py_DECREF(module);
