@@ -1,6 +1,6 @@
 # akima.py
 
-# Copyright (c) 2007-2021, Christoph Gohlke
+# Copyright (c) 2007-2022, Christoph Gohlke
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -41,30 +41,34 @@ A continuously differentiable sub-spline is built from piecewise cubic
 polynomials. It passes through the given data points and will appear smooth
 and natural.
 
-:Author:
-  `Christoph Gohlke <https://www.lfd.uci.edu/~gohlke/>`_
+This module is no longer being actively developed. Consider using
+`scipy.interpolate.Akima1DInterpolator
+<http://docs.scipy.org/doc/scipy/reference/interpolate.html>`_ instead.
 
-:Organization:
-  Laboratory for Fluorescence Dynamics. University of California, Irvine
-
+:Author: `Christoph Gohlke <https://www.cgohlke.com>`_
 :License: BSD 3-Clause
-
-:Version: 2021.6.6
+:Version: 2022.9.12
 
 Requirements
 ------------
-* `CPython >= 3.7 <https://www.python.org>`_
-* `Numpy 1.15 <https://www.numpy.org>`_
 
-Notes
------
-The Akima module is no longer being actively developed.
+This release has been tested with the following requirements and dependencies
+(other versions may work):
 
-Consider using `scipy.interpolate.Akima1DInterpolator
-<http://docs.scipy.org/doc/scipy/reference/interpolate.html>`_ instead.
+- `CPython 3.8.10, 3.9.13, 3.10.7, 3.11.0rc2 <https://www.python.org>`_
+- `NumPy 1.22.4 <https://pypi.org/project/numpy/>`_
+
+Revisions
+---------
+
+2022.9.12
+
+- Remove support for Python 3.7 (NEP 29).
+- Update metadata.
 
 Examples
 --------
+
 >>> from matplotlib import pyplot
 >>> from scipy.interpolate import Akima1DInterpolator
 >>> def example():
@@ -84,9 +88,9 @@ Examples
 
 """
 
-__version__ = '2021.6.6'
+__version__ = '2022.9.12'
 
-__all__ = ('interpolate',)
+__all__ = ['interpolate']
 
 import numpy
 
@@ -173,7 +177,7 @@ def interpolate(x, y, x_new, axis=-1, out=None):
 
     b[ids] = (f1[ids] * m1[ids + 1] + f2[ids] * m1[ids + 2]) / f12[ids]
     c = (3.0 * m - 2.0 * b[0 : n - 1] - b[1:n]) / dx
-    d = (b[0 : n - 1] + b[1:n] - 2.0 * m) / dx ** 2
+    d = (b[0 : n - 1] + b[1:n] - 2.0 * m) / dx**2
 
     bins = numpy.digitize(xi, x)
     bins = numpy.minimum(bins, n - 1) - 1
@@ -185,15 +189,15 @@ def interpolate(x, y, x_new, axis=-1, out=None):
 
 try:
     interpolate_py = interpolate
-    from ._akima import interpolate
+    from ._akima import interpolate  # type: ignore
 except ImportError:
     try:
-        from _akima import interpolate
+        from _akima import interpolate  # type: ignore
     except ImportError:
         import warnings
 
         warnings.warn('failed to import the _akima C extension module')
-        del interpolate_py
+        del interpolate_py  # type: ignore
 
 
 if __name__ == '__main__':
