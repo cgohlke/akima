@@ -11,30 +11,34 @@ A continuously differentiable sub-spline is built from piecewise cubic
 polynomials. It passes through the given data points and will appear smooth
 and natural.
 
-:Author:
-  `Christoph Gohlke <https://www.lfd.uci.edu/~gohlke/>`_
+This module is no longer being actively developed. Consider using
+`scipy.interpolate.Akima1DInterpolator
+<http://docs.scipy.org/doc/scipy/reference/interpolate.html>`_ instead.
 
-:Organization:
-  Laboratory for Fluorescence Dynamics. University of California, Irvine
-
+:Author: `Christoph Gohlke <https://www.cgohlke.com>`_
 :License: BSD 3-Clause
-
-:Version: 2021.6.6
+:Version: 2022.9.12
 
 Requirements
 ------------
-* `CPython >= 3.7 <https://www.python.org>`_
-* `Numpy 1.15 <https://www.numpy.org>`_
 
-Notes
------
-The Akima module is no longer being actively developed.
+This release has been tested with the following requirements and dependencies
+(other versions may work):
 
-Consider using `scipy.interpolate.Akima1DInterpolator
-<http://docs.scipy.org/doc/scipy/reference/interpolate.html>`_ instead.
+- `CPython 3.8.10, 3.9.13, 3.10.7, 3.11.0rc2 <https://www.python.org>`_
+- `NumPy 1.22.4 <https://pypi.org/project/numpy/>`_
+
+Revisions
+---------
+
+2022.9.12
+
+- Remove support for Python 3.7 (NEP 29).
+- Update metadata.
 
 Examples
 --------
+
 >>> from matplotlib import pyplot
 >>> from scipy.interpolate import Akima1DInterpolator
 >>> def example():
