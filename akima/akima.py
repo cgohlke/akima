@@ -1,6 +1,6 @@
 # akima.py
 
-# Copyright (c) 2007-2022, Christoph Gohlke
+# Copyright (c) 2007-2024, Christoph Gohlke
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -34,8 +34,8 @@
 Akima is a Python library that implements Akima's interpolation method
 described in:
 
-    A new method of interpolation and smooth curve fitting based
-    on local procedures. Hiroshi Akima, J. ACM, October 1970, 17(4), 589-602.
+    A new method of interpolation and smooth curve fitting based on local
+    procedures. Hiroshi Akima, J. ACM, October 1970, 17(4), 589-602.
 
 A continuously differentiable sub-spline is built from piecewise cubic
 polynomials. It passes through the given data points and will appear smooth
@@ -47,19 +47,37 @@ This module is no longer being actively developed. Consider using
 
 :Author: `Christoph Gohlke <https://www.cgohlke.com>`_
 :License: BSD 3-Clause
-:Version: 2022.9.12
+:Version: 2024.1.6
+
+Quickstart
+----------
+
+Install the akima package and all dependencies from the
+`Python Package Index <https://pypi.org/project/akima/>`_::
+
+    python -m pip install -U akima
+
+See `Examples`_ for using the programming interface.
+
+Source code, examples, and support are available on
+`GitHub <https://github.com/cgohlke/akima>`_.
 
 Requirements
 ------------
 
-This release has been tested with the following requirements and dependencies
+This revision was tested with the following requirements and dependencies
 (other versions may work):
 
-- `CPython 3.8.10, 3.9.13, 3.10.7, 3.11.0rc2 <https://www.python.org>`_
-- `NumPy 1.22.4 <https://pypi.org/project/numpy/>`_
+- `CPython <https://www.python.org>`_ 3.9.13, 3.10.11, 3.11.7, 3.12.1
+- `NumPy <https://pypi.org/project/numpy/>`_ 1.26.3
 
 Revisions
 ---------
+
+2024.1.6
+
+- Add type hints.
+- Remove support for Python 3.8 and 1.22 (NEP 29).
 
 2022.9.12
 
@@ -68,7 +86,7 @@ Revisions
 
 Examples
 --------
-
+>>> import numpy
 >>> from matplotlib import pyplot
 >>> from scipy.interpolate import Akima1DInterpolator
 >>> def example():
@@ -88,14 +106,32 @@ Examples
 
 """
 
-__version__ = '2022.9.12'
+from __future__ import annotations
+
+__version__ = '2024.1.6'
 
 __all__ = ['interpolate']
 
+
+from typing import TYPE_CHECKING
+
 import numpy
 
+if TYPE_CHECKING:
+    from typing import Any
 
-def interpolate(x, y, x_new, axis=-1, out=None):
+    from numpy.typing import ArrayLike, NDArray
+
+
+def interpolate(
+    x: ArrayLike,
+    y: ArrayLike,
+    x_new: ArrayLike,
+    /,
+    *,
+    axis: int = -1,
+    out: NDArray[Any] | None = None,
+):
     """Return interpolated data using Akima's method.
 
     This Python implementation is inspired by the Matlab(r) code by
@@ -103,42 +139,41 @@ def interpolate(x, y, x_new, axis=-1, out=None):
     such as the output array argument and interpolation along an axis of a
     multidimensional data array.
 
-    Parameters
-    ----------
-    x : array like
-        1D array of monotonically increasing real values.
-    y : array like
-        N-D array of real values. y's length along the interpolation
-        axis must be equal to the length of x.
-    x_new : array like
-        New independent variables.
-    axis : int
-        Specifies axis of y along which to interpolate. Interpolation
-        defaults to last axis of y.
-    out : array
-        Optional array to receive results. Dimension at axis must equal
-        length of x.
+    Parameters:
+        x:
+            1D array of monotonically increasing real values.
+        y:
+            N-D array of real values. y's length along the interpolation
+            axis must be equal to the length of x.
+        x_new:
+            New independent variables.
+        axis:
+            Specifies axis of y along which to interpolate.
+            Interpolation defaults to last axis of y.
+        out:
+            Optional array to receive results. Dimension at axis must equal
+            length of x.
 
-    Examples
-    --------
-    >>> interpolate([0, 1, 2], [0, 0, 1], [0.5, 1.5])
-    array([-0.125,  0.375])
-    >>> x = numpy.sort(numpy.random.random(10) * 10)
-    >>> y = numpy.random.normal(0.0, 0.1, size=len(x))
-    >>> z = interpolate(x, y, x)
-    >>> numpy.allclose(y, z)
-    True
-    >>> x = x[:10]
-    >>> y = numpy.reshape(y, (10, -1))
-    >>> z = numpy.reshape(y, (10, -1))
-    >>> interpolate(x, y, x, axis=0, out=z)
-    >>> numpy.allclose(y, z)
-    True
+    Examples:
+        >>> import numpy
+        >>> interpolate([0, 1, 2], [0, 0, 1], [0.5, 1.5])
+        array([-0.125,  0.375])
+        >>> x = numpy.sort(numpy.random.random(10) * 10)
+        >>> y = numpy.random.normal(0.0, 0.1, size=len(x))
+        >>> z = interpolate(x, y, x)
+        >>> numpy.allclose(y, z)
+        True
+        >>> x = x[:10]
+        >>> y = numpy.reshape(y, (10, -1))
+        >>> z = numpy.reshape(y, (10, -1))
+        >>> interpolate(x, y, x, axis=0, out=z)
+        >>> numpy.allclose(y, z)
+        True
 
     """
-    x = numpy.array(x, dtype='float64', copy=True)
-    y = numpy.array(y, dtype='float64', copy=True)
-    xi = numpy.array(x_new, dtype='float64', copy=True)
+    x = numpy.array(x, dtype=numpy.float64, copy=True)
+    y = numpy.array(y, dtype=numpy.float64, copy=True)
+    xi = numpy.array(x_new, dtype=numpy.float64, copy=True)
 
     if axis != -1 or out is not None or y.ndim != 1:
         raise NotImplementedError('implemented in C extension module')
