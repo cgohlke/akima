@@ -1,5 +1,14 @@
 include LICENSE
 include README.rst
+include pyproject.toml
+include akima/py.typed
+include .github/workflows/wheel.yml
+
+exclude *.cmd
+recursive-exclude doc *
+recursive-exclude docs *
+recursive-exclude test *
+recursive-exclude tests *
 
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]
