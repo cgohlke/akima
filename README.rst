@@ -4,8 +4,8 @@ Akima Interpolation
 Akima is a Python library that implements Akima's interpolation method
 described in:
 
-    A new method of interpolation and smooth curve fitting based
-    on local procedures. Hiroshi Akima, J. ACM, October 1970, 17(4), 589-602.
+    A new method of interpolation and smooth curve fitting based on local
+    procedures. Hiroshi Akima, J. ACM, October 1970, 17(4), 589-602.
 
 A continuously differentiable sub-spline is built from piecewise cubic
 polynomials. It passes through the given data points and will appear smooth
@@ -17,19 +17,37 @@ This module is no longer being actively developed. Consider using
 
 :Author: `Christoph Gohlke <https://www.cgohlke.com>`_
 :License: BSD 3-Clause
-:Version: 2022.9.12
+:Version: 2024.1.6
+
+Quickstart
+----------
+
+Install the akima package and all dependencies from the
+`Python Package Index <https://pypi.org/project/akima/>`_::
+
+    python -m pip install -U akima
+
+See `Examples`_ for using the programming interface.
+
+Source code, examples, and support are available on
+`GitHub <https://github.com/cgohlke/akima>`_.
 
 Requirements
 ------------
 
-This release has been tested with the following requirements and dependencies
+This revision was tested with the following requirements and dependencies
 (other versions may work):
 
-- `CPython 3.8.10, 3.9.13, 3.10.7, 3.11.0rc2 <https://www.python.org>`_
-- `NumPy 1.22.4 <https://pypi.org/project/numpy/>`_
+- `CPython <https://www.python.org>`_ 3.9.13, 3.10.11, 3.11.7, 3.12.1
+- `NumPy <https://pypi.org/project/numpy/>`_ 1.26.3
 
 Revisions
 ---------
+
+2024.1.6
+
+- Add type hints.
+- Remove support for Python 3.8 and 1.22 (NEP 29).
 
 2022.9.12
 
@@ -38,7 +56,7 @@ Revisions
 
 Examples
 --------
-
+>>> import numpy
 >>> from matplotlib import pyplot
 >>> from scipy.interpolate import Akima1DInterpolator
 >>> def example():
