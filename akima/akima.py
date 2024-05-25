@@ -47,7 +47,7 @@ This module is no longer being actively developed. Consider using
 
 :Author: `Christoph Gohlke <https://www.cgohlke.com>`_
 :License: BSD 3-Clause
-:Version: 2024.1.6
+:Version: 2024.5.24
 
 Quickstart
 ----------
@@ -68,16 +68,21 @@ Requirements
 This revision was tested with the following requirements and dependencies
 (other versions may work):
 
-- `CPython <https://www.python.org>`_ 3.9.13, 3.10.11, 3.11.7, 3.12.1
-- `NumPy <https://pypi.org/project/numpy/>`_ 1.26.3
+- `CPython <https://www.python.org>`_ 3.9.13, 3.10.11, 3.11.9, 3.12.3
+- `NumPy <https://pypi.org/project/numpy/>`_ 1.26.4
 
 Revisions
 ---------
 
+2024.5.24
+
+- Fix docstring examples not correctly rendered on GitHub.
+- Support NumPy 2.
+
 2024.1.6
 
 - Add type hints.
-- Remove support for Python 3.8 and 1.22 (NEP 29).
+- Remove support for Python 3.8 and numpy 1.22 (NEP 29).
 
 2022.9.12
 
@@ -102,13 +107,14 @@ Examples
 ...     pyplot.plot(x, y, 'go', label='data')
 ...     pyplot.legend()
 ...     pyplot.show()
+...
 >>> example()
 
 """
 
 from __future__ import annotations
 
-__version__ = '2024.1.6'
+__version__ = '2024.5.24'
 
 __all__ = ['interpolate']
 
