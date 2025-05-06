@@ -1,6 +1,7 @@
 include LICENSE
 include README.rst
 include pyproject.toml
+
 include akima/py.typed
 include .github/workflows/wheel.yml
 
