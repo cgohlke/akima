@@ -5,7 +5,11 @@ include pyproject.toml
 include akima/py.typed
 include .github/workflows/wheel.yml
 
+exclude .env
 exclude *.cmd
+exclude *.yaml
+exclude mypy.ini
+exclude ruff.toml
 recursive-exclude doc *
 recursive-exclude docs *
 recursive-exclude test *
