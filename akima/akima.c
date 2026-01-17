@@ -1,7 +1,7 @@
 /* akima.c
 
 /*
-Copyright (c) 2007-2025, Christoph Gohlke
+Copyright (c) 2007-2026, Christoph Gohlke
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -40,13 +40,13 @@ Refer to the akima.py module for documentation and tests.\n\
 \n\
 :Author: `Christoph Gohlke <https://www.cgohlke.com/>`_\n\
 :License: BSD-3-Clause\n\
-:Version: 2025.8.1\n\
+:Version: 2026.1.18\n\
 "
 
-#define _VERSION_ "2025.8.1"
+#define _VERSION_ "2026.1.18"
 
 #define WIN32_LEAN_AND_MEAN
-#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+#define NPY_NO_DEPRECATED_API NPY_2_0_API_VERSION
 
 #include "Python.h"
 #include "numpy/arrayobject.h"
@@ -212,14 +212,18 @@ PyConverter_AnyDoubleArray(
     PyObject *object,
     PyObject **address)
 {
-    PyArrayObject *obj = (PyArrayObject *)object;
     if (PyArray_Check(object)
         && (PyArray_TYPE((const PyArrayObject *)object) == NPY_DOUBLE)) {
-        *address = object;
-        Py_INCREF(object);
+        *address = (PyObject *)PyArray_GETCONTIGUOUS((PyArrayObject *)object);
+        if (*address == NULL) {
+            PyErr_Format(PyExc_ValueError, "failed to get C-contiguous array");
+            return NPY_FAIL;
+        }
         return NPY_SUCCEED;
     } else {
-        *address = PyArray_FROM_OTF(object, NPY_DOUBLE, NPY_ARRAY_ALIGNED);
+        *address = PyArray_FROM_OTF(
+            object, NPY_DOUBLE, NPY_ARRAY_C_CONTIGUOUS | NPY_ARRAY_ALIGNED
+        );
         if (*address == NULL) {
             PyErr_Format(PyExc_ValueError, "can not convert to array");
             return NPY_FAIL;
@@ -233,15 +237,22 @@ PyOutputConverter_AnyDoubleArrayOrNone(
     PyObject *object,
     PyArrayObject **address)
 {
-    PyArrayObject *obj = (PyArrayObject *)object;
     if ((object == NULL) || (object == Py_None)) {
         *address = NULL;
         return NPY_SUCCEED;
     }
     if (PyArray_Check(object)
         && (PyArray_TYPE((const PyArrayObject *)object) == NPY_DOUBLE)) {
-        Py_INCREF(object);
-        *address = (PyArrayObject *)object;
+        *address = (PyArrayObject *)PyArray_GETCONTIGUOUS(
+            (PyArrayObject *)object
+    );
+        if (*address == NULL) {
+            PyErr_Format(
+                PyExc_TypeError,
+                "output must be C-contiguous array of type double"
+            );
+            return NPY_FAIL;
+        }
         return NPY_SUCCEED;
     } else {
         PyErr_Format(PyExc_TypeError, "output must be array of type double");
@@ -412,7 +423,6 @@ static PyMethodDef module_methods[] = {
     {NULL, NULL, 0, NULL} /* Sentinel */
 };
 
-
 struct module_state {
     PyObject *error;
 };
@@ -429,13 +439,33 @@ static int module_clear(PyObject *m) {
     return 0;
 }
 
+static int module_exec(PyObject *module) {
+    if (_import_array() < 0) {
+        return -1;
+    }
+    PyObject *s = PyUnicode_FromString(_VERSION_);
+    if (!s) return -1;
+    PyObject *dict = PyModule_GetDict(module);
+    if (PyDict_SetItemString(dict, "__version__", s) < 0) {
+        Py_DECREF(s);
+        return -1;
+    }
+    Py_DECREF(s);
+    return 0;
+}
+
+static struct PyModuleDef_Slot module_slots[] = {
+    {Py_mod_exec, module_exec},
+    {0, NULL}
+};
+
 static struct PyModuleDef moduledef = {
     PyModuleDef_HEAD_INIT,
     "_akima",
-    NULL,
+    _DOC_,
     sizeof(struct module_state),
     module_methods,
-    NULL,
+    module_slots,
     module_traverse,
     module_clear,
     NULL
@@ -444,39 +474,5 @@ static struct PyModuleDef moduledef = {
 PyMODINIT_FUNC
 PyInit__akima(void)
 {
-    PyObject *module;
-
-    char *doc = (char *)PyMem_Malloc(sizeof(_DOC_) + sizeof(_VERSION_));
-    PyOS_snprintf(doc, sizeof(_DOC_) + sizeof(_VERSION_), _DOC_, _VERSION_);
-
-    moduledef.m_doc = doc;
-    module = PyModule_Create(&moduledef);
-
-    PyMem_Free(doc);
-
-    if (module == NULL) {
-        return NULL;
-    }
-
-#ifdef Py_GIL_DISABLED
-    /* this module supports running with the GIL disabled */
-    if (PyUnstable_Module_SetGIL(module, Py_MOD_GIL_NOT_USED) < 0) {
-        Py_DECREF(module);
-        return NULL;
-    }
-#endif
-
-    if (_import_array() < 0) {
-        Py_DECREF(module);
-        return NULL;
-    }
-
-    {
-    PyObject *s = PyUnicode_FromString(_VERSION_);
-    PyObject *dict = PyModule_GetDict(module);
-    PyDict_SetItemString(dict, "__version__", s);
-    Py_DECREF(s);
-    }
-
-    return module;
+    return PyModuleDef_Init(&moduledef);
 }
