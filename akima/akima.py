@@ -1,6 +1,6 @@
 # akima.py
 
-# Copyright (c) 2007-2025, Christoph Gohlke
+# Copyright (c) 2007-2026, Christoph Gohlke
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -47,7 +47,7 @@ This module is no longer being actively developed. Consider using
 
 :Author: `Christoph Gohlke <https://www.cgohlke.com>`_
 :License: BSD-3-Clause
-:Version: 2025.8.1
+:Version: 2026.1.18
 
 Quickstart
 ----------
@@ -68,11 +68,16 @@ Requirements
 This revision was tested with the following requirements and dependencies
 (other versions may work):
 
-- `CPython <https://www.python.org>`_ 3.11.9, 3.12.10, 3.13.5, 3.14.0rc 64-bit
-- `NumPy <https://pypi.org/project/numpy/>`_ 2.3.2
+- `CPython <https://www.python.org>`_ 3.11.9, 3.12.10, 3.13.11, 3.14.2 64-bit
+- `NumPy <https://pypi.org/project/numpy/>`_ 2.4.1
 
 Revisions
 ---------
+
+2026.1.18
+
+- Use multi-phase initialization.
+- Improve code quality.
 
 2025.8.1
 
@@ -94,8 +99,9 @@ Revisions
 
 2022.9.12
 
-- Drop support for Python 3.7 (NEP 29).
-- Update metadata.
+- …
+
+Refer to the CHANGES file for older revisions.
 
 Examples
 --------
@@ -122,7 +128,7 @@ Examples
 
 from __future__ import annotations
 
-__version__ = '2025.8.1'
+__version__ = '2026.1.18'
 
 __all__ = ['__version__', 'interpolate']
 
@@ -190,23 +196,29 @@ def interpolate(
     xi = numpy.array(x_new, dtype=numpy.float64, copy=True)
 
     if axis != -1 or out is not None or y.ndim != 1:
-        raise NotImplementedError('implemented in C extension module')
+        msg = 'implemented in C extension module'
+        raise NotImplementedError(msg)
 
     if x.ndim != 1 or xi.ndim != 1:
-        raise ValueError('x-arrays must be one dimensional')
+        msg = 'x-arrays must be one dimensional'
+        raise ValueError(msg)
 
     n = len(x)
     if n < 3:
-        raise ValueError('array too small')
+        msg = 'array too small'
+        raise ValueError(msg)
     if n != y.shape[axis]:
-        raise ValueError('size of x-array must match data shape')
+        msg = 'size of x-array must match data shape'
+        raise ValueError(msg)
 
     dx = numpy.diff(x)
     if any(dx <= 0.0):
-        raise ValueError('x-axis not valid')
+        msg = 'x-axis not valid'
+        raise ValueError(msg)
 
     if any(xi < x[0]) or any(xi > x[-1]):
-        raise ValueError('interpolation x-axis out of bounds')
+        msg = 'interpolation x-axis out of bounds'
+        raise ValueError(msg)
 
     m = numpy.diff(y) / dx
     mm = 2.0 * m[0] - m[1]
@@ -245,16 +257,11 @@ except ImportError:
     except ImportError:
         import warnings
 
-        warnings.warn('failed to import the _akima C extension module')
+        warnings.warn(
+            'failed to import the _akima C extension module', stacklevel=2
+        )
         del interpolate_py
     else:
-        __all__.append('interpolate_py')
+        __all__ += ['interpolate_py']
 else:
-    __all__.append('interpolate_py')
-
-
-if __name__ == '__main__':
-    import doctest
-    import random  # noqa: used in doctests
-
-    doctest.testmod()
+    __all__ += ['interpolate_py']
