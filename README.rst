@@ -20,7 +20,7 @@ This module is no longer being actively developed. Consider using
 
 :Author: `Christoph Gohlke <https://www.cgohlke.com>`_
 :License: BSD-3-Clause
-:Version: 2025.8.1
+:Version: 2026.1.18
 
 Quickstart
 ----------
@@ -41,11 +41,16 @@ Requirements
 This revision was tested with the following requirements and dependencies
 (other versions may work):
 
-- `CPython <https://www.python.org>`_ 3.11.9, 3.12.10, 3.13.5, 3.14.0rc 64-bit
-- `NumPy <https://pypi.org/project/numpy/>`_ 2.3.2
+- `CPython <https://www.python.org>`_ 3.11.9, 3.12.10, 3.13.11, 3.14.2 64-bit
+- `NumPy <https://pypi.org/project/numpy/>`_ 2.4.1
 
 Revisions
 ---------
+
+2026.1.18
+
+- Use multi-phase initialization.
+- Improve code quality.
 
 2025.8.1
 
@@ -67,8 +72,9 @@ Revisions
 
 2022.9.12
 
-- Drop support for Python 3.7 (NEP 29).
-- Update metadata.
+- …
+
+Refer to the CHANGES file for older revisions.
 
 Examples
 --------
