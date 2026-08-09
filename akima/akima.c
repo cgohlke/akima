@@ -1,4 +1,4 @@
-/* akima.c
+/* akima.c */
 
 /*
 Copyright (c) 2007-2026, Christoph Gohlke
@@ -38,15 +38,16 @@ for the akima package.\n\
 \n\
 Refer to the akima.py module for documentation and tests.\n\
 \n\
-:Author: `Christoph Gohlke <https://www.cgohlke.com/>`_\n\
+:Author: `Christoph Gohlke <https://www.cgohlke.com>`_\n\
 :License: BSD-3-Clause\n\
-:Version: 2026.1.18\n\
+:Version: 2026.8.8\n\
 "
 
-#define _VERSION_ "2026.1.18"
+#define _VERSION_ "2026.8.8"
 
+#define PY_SSIZE_T_CLEAN
 #define WIN32_LEAN_AND_MEAN
-#define NPY_NO_DEPRECATED_API NPY_2_0_API_VERSION
+#define NPY_NO_DEPRECATED_API NPY_2_1_API_VERSION
 
 #include "Python.h"
 #include "numpy/arrayobject.h"
@@ -57,15 +58,19 @@ A new method of interpolation and smooth curve fitting based on local
 procedures. Hiroshi Akima, J. ACM, October 1970, 17(4), 589-602.
 */
 
-int interpolate(
+static int interpolate(
     Py_ssize_t si,            /* size of input arrays */
-    char *xi, Py_ssize_t dxi, /* x coordinates and stride */
-    char *yi, Py_ssize_t dyi, /* y coordinates and stride */
+    char *xi,
+    Py_ssize_t dxi,           /* x coordinates and stride */
+    char *yi,
+    Py_ssize_t dyi,           /* y coordinates and stride */
     Py_ssize_t so,            /* size of output arrays */
-    char *xo, Py_ssize_t dxo, /* x coordinates of output and stride */
-    char *yo, Py_ssize_t dyo, /* y output coordinates and stride */
+    char *xo,
+    Py_ssize_t dxo,           /* x coordinates of output and stride */
+    char *yo,
+    Py_ssize_t dyo,           /* y output coordinates and stride */
     double *p  /* buffer for polynomial coefficients of size 4*si+4 */
-    )
+)
 {
     Py_ssize_t i, s;
     double x0, x1, x2, x3;       /* extrapolated x values */
@@ -74,19 +79,19 @@ int interpolate(
     double d0, d1;
     double g0, g1;               /* gradients at extrapolated values */
     double *p0, *p1, *p2, *p3;   /* buffer pointers. p3 holds slopes */
-    char *pxi, *pyi, *pxo, *pyo; /* data pointers */
+    char *pxi, *pyi, *pxo, *pyo, *sp; /* data pointers */
 
     p0 = p;
     p1 = p + si + 1;
-    p2 = p + si*2 + 2;
-    p3 = p + si*3 + 3;
+    p2 = p + si * 2 + 2;
+    p3 = p + si * 3 + 3;
 
     /* slopes of input data */
     pxi = xi;
     pyi = yi;
     t0 = *((double *)pxi);
     t1 = *((double *)pyi);
-    i = si-1;
+    i = si - 1;
     while (i--) {
         pxi += dxi;
         pyi += dyi;
@@ -97,7 +102,7 @@ int interpolate(
         t0 = *((double *)pxi);
         t1 = *((double *)pyi);
     }
-    p3 = p + si*3 + 3;
+    p3 = p + si * 3 + 3;
 
     /* extrapolate 2 points on left side */
     t0 = *((double *)(xi));
@@ -105,26 +110,26 @@ int interpolate(
     t2 = *((double *)(yi));
     /* t3 = *((double *)(yi + dyi)); */
 
-    x1 = t0 + t1 - *((double *)(xi+dxi+dxi));
+    x1 = t0 + t1 - *((double *)(xi + dxi + dxi));
     x0 = x1 + t0 - t1;
-    y1 = (t0 - x1) * (p3[1] - 2.0*p3[0]) + t2;
+    y1 = (t0 - x1) * (p3[1] - 2.0 * p3[0]) + t2;
     g1 = (t2 - y1) / (t0 - x1);
-    y0 = (x1 - x0) * (p3[0] - 2.0*g1) + y1;
+    y0 = (x1 - x0) * (p3[0] - 2.0 * g1) + y1;
     g0 = (y1 - y0) / (x1 - x0);
 
     /* extrapolate 2 points on right side */
-    s = (Py_ssize_t)xi + dxi*(si-1);
-    t0 = *((double *)(s - dxi));
-    t1 = *((double *)(s));
-    x2 = t1 + t0 - *((double *)(s - dxi - dxi));
+    sp = xi + dxi * (si - 1);
+    t0 = *((double *)(sp - dxi));
+    t1 = *((double *)(sp));
+    x2 = t1 + t0 - *((double *)(sp - dxi - dxi));
     x3 = x2 + t1 - t0;
 
-    s = (Py_ssize_t)yi + dyi*(si-1);
-    /* t2 = *((double *)(s - dyi)); */
-    t3 = *((double *)(s));
-    y2 = (2.0*p3[si-2] - p3[si-3]) * (x2 - t1) + t3;
-    p3[si-1] = (y2 - t3) / (x2 - t1);
-    y3 = (2.0*p3[si-1] - p3[si-2]) * (x3 - x2) + y2;
+    sp = yi + dyi * (si - 1);
+    /* t2 = *((double *)(sp - dyi)); */
+    t3 = *((double *)(sp));
+    y2 = (2.0 * p3[si - 2] - p3[si - 3]) * (x2 - t1) + t3;
+    p3[si - 1] = (y2 - t3) / (x2 - t1);
+    y3 = (2.0 * p3[si - 1] - p3[si - 2]) * (x3 - x2) + y2;
     p3[si] = (y3 - y2) / (x3 - x2);
 
     /* slopes */
@@ -145,8 +150,9 @@ int interpolate(
             d1 *= -1.0;
         if ((d0 + d1) < 1e-9) {
             *p3++ = 0.5 * (t1 + t2);
-        } else {
-            *p3++ = (d0*t1 + d1*t2) / (d0 + d1);
+        }
+        else {
+            *p3++ = (d0 * t1 + d1 * t2) / (d0 + d1);
         }
     }
     /* polynomial coefficients */
@@ -154,7 +160,7 @@ int interpolate(
     pyi = yi;
     t0 = *((double *)pxi);
     t1 = *((double *)pyi);
-    p3 = p + si*3 + 3;
+    p3 = p + si * 3 + 3;
     g1 = *p3++;
     i = si;
     while (i--) {
@@ -166,16 +172,16 @@ int interpolate(
         g0 = g1;
         g1 = *p3++;
         *p0++ = t1;
-        *p1++ = (3.0*t2 - 2.0*g0 - g1) / d0;
-        *p2++ = (g0 + g1 - 2.0*t2) / (d0*d0);
+        *p1++ = (3.0 * t2 - 2.0 * g0 - g1) / d0;
+        *p2++ = (g0 + g1 - 2.0 * t2) / (d0 * d0);
         t0 = *((double *)pxi);
         t1 = *((double *)pyi);
     }
     /* interpolate data */
     p0 = p;
     p1 = p + si + 1;
-    p2 = p + si*2 + 2;
-    p3 = p + si*3 + 3;
+    p2 = p + si * 2 + 2;
+    p3 = p + si * 3 + 3;
     pxi = xi;
     pyi = yi;
     pxo = xo;
@@ -194,7 +200,8 @@ int interpolate(
             pxi = xi + dxi;
         }
         t1 = t0 - *((double *)(pxi - dxi));
-        *((double *)pyo) = p0[i] + p3[i]*t1 + p1[i]*t1*t1 + p2[i]*t1*t1*t1;
+        *((double *)pyo) = p0[i] + p3[i] * t1 + p1[i] * t1 * t1 + p2[i] * t1 *
+            t1 * t1;
         pyo += dyo;
         pxo += dxo;
     }
@@ -212,17 +219,31 @@ PyConverter_AnyDoubleArray(
     PyObject *object,
     PyObject **address)
 {
-    if (PyArray_Check(object)
-        && (PyArray_TYPE((const PyArrayObject *)object) == NPY_DOUBLE)) {
-        *address = (PyObject *)PyArray_GETCONTIGUOUS((PyArrayObject *)object);
+    if (
+        PyArray_Check(object)
+        && (PyArray_TYPE((const PyArrayObject *)object) == NPY_DOUBLE))
+    {
+        if (PyArray_ISCONTIGUOUS((PyArrayObject *)object)) {
+            Py_INCREF(object);
+            *address = object;
+        }
+        else {
+            *address = (PyObject *)PyArray_NewCopy(
+                (PyArrayObject *)object,
+                NPY_CORDER
+            );
+        }
         if (*address == NULL) {
             PyErr_Format(PyExc_ValueError, "failed to get C-contiguous array");
             return NPY_FAIL;
         }
         return NPY_SUCCEED;
-    } else {
+    }
+    else {
         *address = PyArray_FROM_OTF(
-            object, NPY_DOUBLE, NPY_ARRAY_C_CONTIGUOUS | NPY_ARRAY_ALIGNED
+            object,
+            NPY_DOUBLE,
+            NPY_ARRAY_C_CONTIGUOUS | NPY_ARRAY_ALIGNED
         );
         if (*address == NULL) {
             PyErr_Format(PyExc_ValueError, "can not convert to array");
@@ -241,11 +262,20 @@ PyOutputConverter_AnyDoubleArrayOrNone(
         *address = NULL;
         return NPY_SUCCEED;
     }
-    if (PyArray_Check(object)
-        && (PyArray_TYPE((const PyArrayObject *)object) == NPY_DOUBLE)) {
-        *address = (PyArrayObject *)PyArray_GETCONTIGUOUS(
-            (PyArrayObject *)object
-    );
+    if (
+        PyArray_Check(object)
+        && (PyArray_TYPE((const PyArrayObject *)object) == NPY_DOUBLE))
+    {
+        if (PyArray_ISCONTIGUOUS((PyArrayObject *)object)) {
+            Py_INCREF(object);
+            *address = (PyArrayObject *)object;
+        }
+        else {
+            *address = (PyArrayObject *)PyArray_NewCopy(
+                (PyArrayObject *)object,
+                NPY_CORDER
+            );
+        }
         if (*address == NULL) {
             PyErr_Format(
                 PyExc_TypeError,
@@ -254,7 +284,8 @@ PyOutputConverter_AnyDoubleArrayOrNone(
             return NPY_FAIL;
         }
         return NPY_SUCCEED;
-    } else {
+    }
+    else {
         PyErr_Format(PyExc_TypeError, "output must be array of type double");
         *address = NULL;
         return NPY_FAIL;
@@ -264,7 +295,7 @@ PyOutputConverter_AnyDoubleArrayOrNone(
 /*
 Interpolate array along axis using Akima's method.
 */
-char py_interpolate_doc[] =
+static const char py_interpolate_doc[] =
     "Return interpolated data along axis using Akima's method.";
 
 static PyObject *
@@ -286,28 +317,42 @@ py_interpolate(
     int i, ndim, error;
     double *buffer = NULL;
 
-    static char *kwlist[] = {"x", "y", "x_new", "axis", "out", NULL};
+    static char *kwlist[] = { "x", "y", "x_new", "axis", "out", NULL };
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&O&O&|O&O&", kwlist,
-        PyConverter_AnyDoubleArray, &xdata,
-        PyConverter_AnyDoubleArray, &data,
-        PyConverter_AnyDoubleArray, &xout,
-        PyArray_AxisConverter, &axis,
-        PyOutputConverter_AnyDoubleArrayOrNone, &oout))
+    if (
+        !PyArg_ParseTupleAndKeywords(
+        args,
+        kwds,
+        "O&O&O&|O&O&",
+        kwlist,
+        PyConverter_AnyDoubleArray,
+        &xdata,
+        PyConverter_AnyDoubleArray,
+        &data,
+        PyConverter_AnyDoubleArray,
+        &xout,
+        PyArray_AxisConverter,
+        &axis,
+        PyOutputConverter_AnyDoubleArrayOrNone,
+        &oout
+        ))
         goto _fail;
 
     /* check axis */
     ndim = PyArray_NDIM(data);
     if ((axis == NPY_MAXDIMS) || (axis == -1)) {
         axis = ndim - 1;
-    } else if ((axis < 0) || (axis > NPY_MAXDIMS)) {
+    }
+    else if ((axis < 0) || (axis > NPY_MAXDIMS)) {
         PyErr_Format(PyExc_ValueError, "invalid axis");
         goto _fail;
     }
 
     if ((PyArray_NDIM(xdata) != 1) || (PyArray_NDIM(xout) != 1)) {
-        PyErr_Format(PyExc_ValueError,
-            "x-arrays must be one dimensional");
+        PyErr_Format(
+            PyExc_ValueError,
+            "x-arrays must be one dimensional"
+        );
         goto _fail;
     }
 
@@ -320,8 +365,10 @@ py_interpolate(
     }
 
     if (size != PyArray_DIM(xdata, 0)) {
-        PyErr_Format(PyExc_ValueError,
-            "size of x-array must match data shape at axis");
+        PyErr_Format(
+            PyExc_ValueError,
+            "size of x-array must match data shape at axis"
+        );
         goto _fail;
     }
 
@@ -336,11 +383,15 @@ py_interpolate(
             PyErr_Format(PyExc_ValueError, "failed to allocate output array");
             goto _fail;
         }
-    } else if (ndim != PyArray_NDIM(oout)) {
-        PyErr_Format(PyExc_ValueError,
-            "output and data array dimension mismatch");
+    }
+    else if (ndim != PyArray_NDIM(oout)) {
+        PyErr_Format(
+            PyExc_ValueError,
+            "output and data array dimension mismatch"
+        );
         goto _fail;
-    } else {
+    }
+    else {
         for (i = 0; i < ndim; i++) {
             if (newshape[i] != PyArray_DIM(oout, i)) {
                 PyErr_Format(PyExc_ValueError, "wrong output shape");
@@ -367,12 +418,17 @@ py_interpolate(
     while (dit->index < dit->size) {
         error = interpolate(
             size,
-            PyArray_DATA(xdata), xdstride,
-            dit->dataptr, dstride,
+            PyArray_DATA(xdata),
+            xdstride,
+            dit->dataptr,
+            dstride,
             outsize,
-            PyArray_DATA(xout), xostride,
-            oit->dataptr, ostride,
-            buffer);
+            PyArray_DATA(xout),
+            xostride,
+            oit->dataptr,
+            ostride,
+            buffer
+        );
 
         if (error != 0) {
             PyErr_Format(PyExc_ValueError, "interpolate() failed");
@@ -384,32 +440,33 @@ py_interpolate(
     }
 
     PyMem_Free(buffer);
-    Py_DECREF(oit);
-    Py_DECREF(dit);
-    Py_DECREF(data);
-    Py_DECREF(xout);
-    Py_DECREF(xdata);
+    Py_DECREF((PyObject *)oit);
+    Py_DECREF((PyObject *)dit);
+    Py_DECREF((PyObject *)data);
+    Py_DECREF((PyObject *)xout);
+    Py_DECREF((PyObject *)xdata);
 
     /* Return output vector if not provided as argument */
     if (oout == NULL) {
         return PyArray_Return(out);
-    } else {
-        Py_INCREF(Py_None);
-        return Py_None;
+    }
+    else {
+        Py_DECREF(oout);
+        Py_RETURN_NONE;
     }
 
-  _fail:
-    Py_XDECREF(xdata);
-    Py_XDECREF(xout);
-    Py_XDECREF(data);
-    Py_XDECREF(oit);
-    Py_XDECREF(dit);
+_fail:
+    Py_XDECREF((PyObject *)xdata);
+    Py_XDECREF((PyObject *)xout);
+    Py_XDECREF((PyObject *)data);
+    Py_XDECREF((PyObject *)oit);
+    Py_XDECREF((PyObject *)dit);
     if (buffer != NULL)
         PyMem_Free(buffer);
     if (oout == NULL)
-        Py_XDECREF(out);
+        Py_XDECREF((PyObject *)out);
     else
-        Py_XDECREF(oout);
+        Py_XDECREF((PyObject *)oout);
     return NULL;
 }
 
@@ -418,52 +475,55 @@ py_interpolate(
 /* Python module */
 
 static PyMethodDef module_methods[] = {
-    {"interpolate", (PyCFunction)py_interpolate, METH_VARARGS|METH_KEYWORDS,
-        py_interpolate_doc},
-    {NULL, NULL, 0, NULL} /* Sentinel */
+    { "interpolate", (PyCFunction)py_interpolate, METH_VARARGS | METH_KEYWORDS,
+      py_interpolate_doc },
+    { NULL, NULL, 0, NULL } /* Sentinel */
 };
 
-struct module_state {
-    PyObject *error;
-};
-
-#define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
-
-static int module_traverse(PyObject *m, visitproc visit, void *arg) {
-    Py_VISIT(GETSTATE(m)->error);
+static int module_traverse(
+    PyObject *m,
+    visitproc visit,
+    void *arg)
+{
+    (void)m;
+    (void)visit;
+    (void)arg;
     return 0;
 }
 
-static int module_clear(PyObject *m) {
-    Py_CLEAR(GETSTATE(m)->error);
+static int module_clear(
+    PyObject *m)
+{
+    (void)m;
     return 0;
 }
 
-static int module_exec(PyObject *module) {
+static int module_exec(
+    PyObject *module)
+{
     if (_import_array() < 0) {
         return -1;
     }
-    PyObject *s = PyUnicode_FromString(_VERSION_);
-    if (!s) return -1;
-    PyObject *dict = PyModule_GetDict(module);
-    if (PyDict_SetItemString(dict, "__version__", s) < 0) {
-        Py_DECREF(s);
+    if (PyModule_AddStringConstant(module, "__version__", _VERSION_) < 0) {
         return -1;
     }
-    Py_DECREF(s);
     return 0;
 }
 
 static struct PyModuleDef_Slot module_slots[] = {
-    {Py_mod_exec, module_exec},
-    {0, NULL}
+    { Py_mod_exec, module_exec },
+    { Py_mod_multiple_interpreters, Py_MOD_PER_INTERPRETER_GIL_SUPPORTED },
+#ifdef Py_MOD_GIL_NOT_USED
+    { Py_mod_gil, Py_MOD_GIL_NOT_USED },
+#endif
+    { 0, NULL }
 };
 
 static struct PyModuleDef moduledef = {
     PyModuleDef_HEAD_INIT,
     "_akima",
     _DOC_,
-    sizeof(struct module_state),
+    0,
     module_methods,
     module_slots,
     module_traverse,
