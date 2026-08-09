@@ -47,7 +47,7 @@ This module is no longer being actively developed. Consider using
 
 :Author: `Christoph Gohlke <https://www.cgohlke.com>`_
 :License: BSD-3-Clause
-:Version: 2026.1.18
+:Version: 2026.8.8
 
 Quickstart
 ----------
@@ -68,11 +68,17 @@ Requirements
 This revision was tested with the following requirements and dependencies
 (other versions may work):
 
-- `CPython <https://www.python.org>`_ 3.11.9, 3.12.10, 3.13.11, 3.14.2 64-bit
-- `NumPy <https://pypi.org/project/numpy/>`_ 2.4.1
+- `CPython <https://www.python.org>`_ 3.12.10, 3.13.15, 3.14.7, 3.15.0rc 64-bit
+- `Numpy <https://pypi.org/project/numpy>`_ 2.5.2
 
 Revisions
 ---------
+
+2026.8.8
+
+- Make C extension ABI3 and free-threading compatible.
+- Drop support for Python 3.11 and numpy 2.0 (SPEC0).
+- Support Python 3.15.
 
 2026.1.18
 
@@ -128,7 +134,7 @@ Examples
 
 from __future__ import annotations
 
-__version__ = '2026.1.18'
+__version__ = '2026.8.8'
 
 __all__ = ['__version__', 'interpolate']
 
@@ -191,9 +197,9 @@ def interpolate(
         True
 
     """
-    x = numpy.array(x, dtype=numpy.float64, copy=True)
-    y = numpy.array(y, dtype=numpy.float64, copy=True)
-    xi = numpy.array(x_new, dtype=numpy.float64, copy=True)
+    x = numpy.array(x, dtype=numpy.float64, copy=None)
+    y = numpy.array(y, dtype=numpy.float64, copy=None)
+    xi = numpy.array(x_new, dtype=numpy.float64, copy=None)
 
     if axis != -1 or out is not None or y.ndim != 1:
         msg = 'implemented in C extension module'
@@ -212,11 +218,11 @@ def interpolate(
         raise ValueError(msg)
 
     dx = numpy.diff(x)
-    if any(dx <= 0.0):
+    if numpy.any(dx <= 0.0):
         msg = 'x-axis not valid'
         raise ValueError(msg)
 
-    if any(xi < x[0]) or any(xi > x[-1]):
+    if numpy.any(xi < x[0]) or numpy.any(xi > x[-1]):
         msg = 'interpolation x-axis out of bounds'
         raise ValueError(msg)
 
